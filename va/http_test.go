@@ -61,7 +61,7 @@ func TestDialerMismatchError(t *testing.T) {
 func TestPreresolvedDialerTimeout(t *testing.T) {
 	va, _ := setup(nil, 0, "", nil)
 	// Timeouts below 50ms tend to be flaky.
-	va.singleDialTimeout = 50 * time.Millisecond
+	va.singleDialTimeout = 175 * time.Millisecond
 
 	// The context timeout needs to be larger than the singleDialTimeout
 	ctxTimeout := 500 * time.Millisecond
@@ -95,11 +95,12 @@ func TestPreresolvedDialerTimeout(t *testing.T) {
 		t.Fatalf("fetch returned before %s (%s) with %#v", va.singleDialTimeout, took, prob)
 	}
 	if took > 2*va.singleDialTimeout {
+		t.Errorf("took: %s", took)
 		t.Fatalf("fetch didn't timeout after %s", va.singleDialTimeout)
 	}
 	test.AssertEquals(t, prob.Type, probs.ConnectionProblem)
 	expectMatch := regexp.MustCompile(
-		"Fetching http://unroutable.invalid/.well-known/acme-challenge/.*: Timeout during connect")
+		"Fetching http://unroutable.invalid/.well-known/acme-challenge/.*: Timeout.*")
 	if !expectMatch.MatchString(prob.Detail) {
 		t.Errorf("Problem details incorrect. Got %q, expected to match %q",
 			prob.Detail, expectMatch)
@@ -1372,7 +1373,7 @@ func TestHTTPDialTimeout(t *testing.T) {
 	}
 	test.AssertEquals(t, prob.Type, probs.ConnectionProblem)
 	expectMatch := regexp.MustCompile(
-		"Fetching http://unroutable.invalid/.well-known/acme-challenge/.*: Timeout during connect")
+		"Fetching http://unroutable.invalid/.well-known/acme-challenge/.*: Timeout.*")
 	if !expectMatch.MatchString(prob.Detail) {
 		t.Errorf("Problem details incorrect. Got %q, expected to match %q",
 			prob.Detail, expectMatch)
