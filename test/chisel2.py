@@ -45,7 +45,6 @@ DIRECTORY = os.getenv('DIRECTORY', 'http://localhost:4001/directory')
 # ACCEPTABLE_TOS = os.getenv('ACCEPTABLE_TOS',"data:text/plain,Do%20what%20thou%20wilt")
 ACCEPTABLE_TOS = os.getenv('ACCEPTABLE_TOS',"https://boulder.service.consul:4431/terms/v7")
 PORT = os.getenv('PORT', '5002')
-# PORT = os.getenv('PORT', '80')
 
 # URLs to control dns-test-srv
 SET_TXT = "http://localhost:8055/set-txt"
