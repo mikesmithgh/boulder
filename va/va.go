@@ -33,6 +33,16 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+// TODO: this can probably be removed, I copied from pebble during initial testing
+const (
+	// noValidateEnvVar defines the environment variable name used to signal that
+	// the VA should *not* actually validate challenges. Set this to 1 when you
+	// invoke Pebble if you wish validation to always succeed without actually
+	// making any challenge requests, e.g.:
+	//   PEBBLE_VA_ALWAYS_VALID=1 pebble"
+	noValidateEnvVar = "PEBBLE_VA_ALWAYS_VALID"
+)
+
 var (
 	// badTLSHeader contains the string 'HTTP /' which is returned when
 	// we try to talk TLS to a server that only talks HTTP
@@ -397,6 +407,24 @@ func (va *ValidationAuthorityImpl) validateChallenge(ctx context.Context, identi
 	if err != nil {
 		return nil, probs.Malformed("Challenge failed consistency check: %s", err)
 	}
+
+	// IMPORTANT: copied from pebble for testing purposes
+	// If `alwaysValid` is true then return a validation record immediately
+	// without actually making any validation requests.
+	noValidate := os.Getenv(noValidateEnvVar)
+	switch noValidate {
+	case "1", "true", "True", "TRUE":
+		va.log.Infof("Disabling VA challenge requests. VA always returns valid")
+		// NOTE(@cpu): The validation record's URL will not match the value it would
+		// have received in a real validation request. For simplicity when faking
+		// validation we always set it to the task identifier regardless of challenge
+		// type. For example comparison, a real DNS-01 validation would set
+		// the URL to the `_acme-challenge` subdomain.
+
+		// Successful challenge validation
+		return []core.ValidationRecord{{Hostname: identifier.Value}}, nil
+	}
+
 	switch challenge.Type {
 	case core.ChallengeTypeHTTP01:
 		return va.validateHTTP01(ctx, identifier, challenge)

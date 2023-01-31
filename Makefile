@@ -37,7 +37,8 @@ $(CMD_BINS): build_cmds
 
 build_cmds: | $(OBJDIR)
 	echo $(OBJECTS)
-	GOBIN=$(OBJDIR) GO111MODULE=on go install -mod=vendor $(GO_BUILD_FLAGS) ./...
+	# GOBIN=$(OBJDIR) GO111MODULE=on CGO_ENABLED=0 go build -gcflags "all=-N -l" -mod=vendor $(GO_BUILD_FLAGS) ./...
+	GOBIN=$(OBJDIR) GO111MODULE=on go install -gcflags "all=-N -l" -mod=vendor $(GO_BUILD_FLAGS) ./...
 	./link.sh
 
 # Building an RPM requires `fpm` from https://github.com/jordansissel/fpm

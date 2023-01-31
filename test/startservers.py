@@ -11,6 +11,8 @@ import time
 
 from helpers import waithealth, waitport, config_dir, CONFIG_NEXT
 
+# entry point script to start all boulder services
+
 Service = collections.namedtuple('Service', ('name', 'debug_port', 'grpc_addr', 'cmd', 'deps'))
 
 SERVICES = (
@@ -51,6 +53,8 @@ SERVICES = (
         ('boulder-ra-1', 'boulder-ra-2')),
     Service('boulder-va-1',
         8004, 'va1.service.consul:9092',
+        # dlv debug settings
+        # ('/usr/local/bin/dlv', '--listen=:4040', '--headless=true', '--log=true', '--log-output=debugger,debuglineerr,gdbwire,lldbout,rpc', '--api-version=2', '--accept-multiclient', '--output', 'boulder-va', 'debug', '/boulder/cmd/boulder/main.go', '--', '--config', os.path.join(config_dir, 'va.json'), '--addr', 'va1.service.consul:9092', '--debug-addr', ':8004'),
         ('./bin/boulder', 'boulder-va', '--config', os.path.join(config_dir, 'va.json'), '--addr', 'va1.service.consul:9092', '--debug-addr', ':8004'),
         ('boulder-remoteva-a', 'boulder-remoteva-b')),
     Service('boulder-va-2',
@@ -91,6 +95,8 @@ SERVICES = (
         ('boulder-ca-a', 'boulder-ca-b', 'boulder-sa-1', 'boulder-sa-2', 'crl-storer')),
     Service('boulder-ra-1',
         8002, 'ra1.service.consul:9094',
+        # dlv debug settings
+        # ('/usr/local/bin/dlv', '--listen=:4040', '--headless=true', '--log=true', '--log-output=debugger,debuglineerr,gdbwire,lldbout,rpc', '--api-version=2', '--accept-multiclient', '--output', 'boulder-ra', 'debug', '/boulder/cmd/boulder/main.go', '--', '--config', os.path.join(config_dir, 'ra.json'), '--addr', 'ra1.service.consul:9094', '--debug-addr', ':8002'),
         ('./bin/boulder', 'boulder-ra', '--config', os.path.join(config_dir, 'ra.json'), '--addr', 'ra1.service.consul:9094', '--debug-addr', ':8002'),
         ('boulder-sa-1', 'boulder-sa-2', 'boulder-ca-a', 'boulder-ca-b', 'boulder-va-1', 'boulder-va-2', 'akamai-purger', 'boulder-publisher-1', 'boulder-publisher-2')),
     Service('boulder-ra-2',
@@ -109,10 +115,11 @@ SERVICES = (
         8112, 'nonce2.service.consul:9101',
         ('./bin/boulder', 'nonce-service', '--config', os.path.join(config_dir, 'nonce.json'), '--addr', 'nonce2.service.consul:9101', '--debug-addr', ':8112', '--prefix', 'zinc'),
         None),
-    Service('boulder-wfe2',
-        4001, None,
-        ('./bin/boulder', 'boulder-wfe2', '--config', os.path.join(config_dir, 'wfe2.json')),
-        ('boulder-ra-1', 'boulder-ra-2', 'boulder-sa-1', 'boulder-sa-2', 'nonce-service-taro', 'nonce-service-zinc')),
+    Service('boulder-wfe2', 4001, None,
+            # dlv debug settings
+            # ('/usr/local/bin/dlv', '--listen=:4040', '--headless=true', '--log=true', '--log-output=debugger,debuglineerr,gdbwire,lldbout,rpc', '--api-version=2', '--accept-multiclient', '--output', 'boulder-wfe2', 'debug', '/boulder/cmd/boulder/main.go', '--', '--config', '/boulder/test/config/wfe2.json'),
+            ('./bin/boulder', 'boulder-wfe2', '--config', os.path.join(config_dir, 'wfe2.json')),
+            ('boulder-ra-1', 'boulder-ra-2', 'boulder-sa-1', 'boulder-sa-2', 'nonce-service-taro', 'nonce-service-zinc')),
     Service('log-validator',
         8016, None,
         ('./bin/boulder', 'log-validator', '--config', os.path.join(config_dir, 'log-validator.json')),

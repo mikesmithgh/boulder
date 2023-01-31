@@ -163,7 +163,7 @@ def waitport(port, prog, perTickCheck=None):
     """Wait until a port on localhost is open."""
     for _ in range(1000):
         try:
-            time.sleep(0.1)
+            time.sleep(5) # extend timeout to attach local dlv debugger
             if perTickCheck is not None and not perTickCheck():
                 return False
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -177,8 +177,22 @@ def waitport(port, prog, perTickCheck=None):
                 raise
     raise(Exception("timed out waiting for debug port %d (%s)" % (port, prog)))
 
-def waithealth(prog, addr):
-    subprocess.check_call([
-        './bin/health-checker',
-        '-addr', addr,
-        '-config', os.path.join(config_dir, 'health-checker.json')])
+def waithealth(prog, addr, perTickCheck=None):
+    """Wait until a healtcheck passes."""
+    for _ in range(1000):
+        try:
+            time.sleep(5) 
+# extend timeout to attach local dlv debugger
+            if perTickCheck is not None and not perTickCheck():
+                return False
+            print("calling")
+            print(addr)
+            print(os.path.join(config_dir, 'health-checker.json'))
+            subprocess.check_call([
+                './bin/health-checker',
+                '-addr', addr,
+                '-config', os.path.join(config_dir, 'health-checker.json')])
+            return True
+        except:
+            print("Waiting for healthcheck prog %s (%s)" % (prog, addr))
+    raise(Exception("timed out waiting for healthcheck prog %s (%s)" % (prog, addr)))

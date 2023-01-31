@@ -61,7 +61,7 @@ func TestDialerMismatchError(t *testing.T) {
 func TestPreresolvedDialerTimeout(t *testing.T) {
 	va, _ := setup(nil, 0, "", nil)
 	// Timeouts below 50ms tend to be flaky.
-	va.singleDialTimeout = 175 * time.Millisecond
+	va.singleDialTimeout = 175 * time.Millisecond // increased timeout for local tests
 
 	// The context timeout needs to be larger than the singleDialTimeout
 	ctxTimeout := 500 * time.Millisecond
@@ -95,8 +95,7 @@ func TestPreresolvedDialerTimeout(t *testing.T) {
 		t.Fatalf("fetch returned before %s (%s) with %#v", va.singleDialTimeout, took, prob)
 	}
 	if took > 2*va.singleDialTimeout {
-		t.Errorf("took: %s", took)
-		t.Fatalf("fetch didn't timeout after %s", va.singleDialTimeout)
+		t.Fatalf("fetch didn't timeout after %s; took %s", va.singleDialTimeout, took)
 	}
 	test.AssertEquals(t, prob.Type, probs.ConnectionProblem)
 	expectMatch := regexp.MustCompile(

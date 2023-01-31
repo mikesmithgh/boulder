@@ -1,13 +1,14 @@
 version: '3'
 services:
   boulder:
-    # CAUTION: Changing the Go version in this tag changes the version of Go
-    # used for release builds. make-deb.sh relies on being able to parse the
-    # numeric version between 'go' and the underscore-prefixed date. If you make
-    # changes to these tokens, please update this parsing logic.
-    image: &boulder_image letsencrypt/boulder-tools:${BOULDER_TOOLS_TAG:-go1.19.5_2023-01-10}
+    # When updating the Go version here, please also update
+    # .github/workflows/release.yml and .github/workflows/try-release.yml
+    # image: &boulder_image letsencrypt/boulder-tools:${BOULDER_TOOLS_TAG:-go1.19.5_2023-01-10}
+    image: &boulder_image mikesmithgh/boulder-tools:test
     environment:
-      FAKE_DNS: 10.77.77.77
+      PEBBLE_VA_ALWAYS_VALID: 0
+      FAKE_DNS: 192.168.65.2 # host.docker.internal
+      # FAKE_DNS: 10.77.77.77
       BOULDER_CONFIG_DIR: &boulder_config_dir test/config
       GOFLAGS: -mod=vendor
       # Go 1.18 turned off SHA-1 validation on CSRs (and certs, but that doesn't
@@ -32,6 +33,7 @@ services:
       # This is used by TestOldTLS in va/http_test.go
       # TODO(#6011): Remove once TLS 1.0 and 1.1 support is gone.
       - "example.com:127.0.0.1"
+      - "host.docker.internal:host-gateway"
     # Use consul as a backup to Docker's embedded DNS server If there's a name
     # Docker's DNS server doesn't know about, it will forward the query to this
     # IP (running consul).
@@ -41,6 +43,8 @@ services:
       - 4001:4001 # ACMEv2
       - 4002:4002 # OCSP
       - 4003:4003 # OCSP
+      - 4040:4040 # dlv debugger
+      - 8055:8055 # pebble challenge service
     depends_on:
       - bmysql
       - bredis_clusterer
@@ -142,6 +146,9 @@ services:
           - boulder-redis-clusterer
 
   bconsul:
+    ports:
+      - 8500:8500 # forwards 127.0.0.1:8500 -> 10.55.55.10:8500
+      - 53:53/udp # forwards 127.0.0.1:53 -> 10.55.55.10:53
     image: hashicorp/consul:1.13.1
     volumes:
      - ./test/:/test/:cached
