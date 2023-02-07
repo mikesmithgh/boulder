@@ -28,6 +28,7 @@ _testmain.go
 *.sw?
 *.exe
 *.test
+*.test.pem
 *.prof
 *.coverprofile
 
@@ -39,3 +40,4 @@ tags
 .vscode/*
 .hierarchy/
 .softhsm-tokens/
+

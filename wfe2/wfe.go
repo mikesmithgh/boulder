@@ -470,7 +470,8 @@ func (wfe *WebFrontEndImpl) Directory(
 	ctx context.Context,
 	logEvent *web.RequestEvent,
 	response http.ResponseWriter,
-	request *http.Request) {
+	request *http.Request,
+) {
 	directoryEndpoints := map[string]interface{}{
 		"newAccount": newAcctPath,
 		"newNonce":   newNoncePath,
@@ -540,7 +541,8 @@ func (wfe *WebFrontEndImpl) Nonce(
 	ctx context.Context,
 	logEvent *web.RequestEvent,
 	response http.ResponseWriter,
-	request *http.Request) {
+	request *http.Request,
+) {
 	if request.Method == http.MethodPost {
 		acct, prob := wfe.validPOSTAsGETForAccount(request, ctx, logEvent)
 		if prob != nil {
@@ -590,8 +592,8 @@ func (wfe *WebFrontEndImpl) NewAccount(
 	ctx context.Context,
 	logEvent *web.RequestEvent,
 	response http.ResponseWriter,
-	request *http.Request) {
-
+	request *http.Request,
+) {
 	// NewAccount uses `validSelfAuthenticatedPOST` instead of
 	// `validPOSTforAccount` because there is no account to authenticate against
 	// until after it is created!
@@ -774,7 +776,8 @@ func (wfe *WebFrontEndImpl) NewAccount(
 // or revocation reason don't pass simple static checks. Also populates some
 // metadata fields on the given logEvent.
 func (wfe *WebFrontEndImpl) parseRevocation(
-	ctx context.Context, jwsBody []byte, logEvent *web.RequestEvent) (*x509.Certificate, revocation.Reason, *probs.ProblemDetails) {
+	ctx context.Context, jwsBody []byte, logEvent *web.RequestEvent,
+) (*x509.Certificate, revocation.Reason, *probs.ProblemDetails) {
 	// Read the revoke request from the JWS payload
 	var revokeRequest struct {
 		CertificateDER core.JSONBuffer    `json:"certificate"`
@@ -847,7 +850,8 @@ func (wfe *WebFrontEndImpl) revokeCertBySubscriberKey(
 	ctx context.Context,
 	outerJWS *jose.JSONWebSignature,
 	request *http.Request,
-	logEvent *web.RequestEvent) error {
+	logEvent *web.RequestEvent,
+) error {
 	// For Key ID revocations we authenticate the outer JWS by using
 	// `validJWSForAccount` similar to other WFE endpoints
 	jwsBody, _, acct, prob := wfe.validJWSForAccount(outerJWS, request, ctx, logEvent)
@@ -890,7 +894,8 @@ func (wfe *WebFrontEndImpl) revokeCertByCertKey(
 	ctx context.Context,
 	outerJWS *jose.JSONWebSignature,
 	request *http.Request,
-	logEvent *web.RequestEvent) error {
+	logEvent *web.RequestEvent,
+) error {
 	// For embedded JWK revocations we authenticate the outer JWS by using
 	// `validSelfAuthenticatedJWS` similar to new-reg and key rollover.
 	// We do *not* use `validSelfAuthenticatedPOST` here because we've already
@@ -940,8 +945,8 @@ func (wfe *WebFrontEndImpl) RevokeCertificate(
 	ctx context.Context,
 	logEvent *web.RequestEvent,
 	response http.ResponseWriter,
-	request *http.Request) {
-
+	request *http.Request,
+) {
 	// The ACME specification handles the verification of revocation requests
 	// differently from other endpoints. For this reason we do *not* immediately
 	// call `wfe.validPOSTForAccount` like all of the other endpoints.
@@ -988,7 +993,8 @@ func (wfe *WebFrontEndImpl) Challenge(
 	ctx context.Context,
 	logEvent *web.RequestEvent,
 	response http.ResponseWriter,
-	request *http.Request) {
+	request *http.Request,
+) {
 	notFound := func() {
 		wfe.sendError(response, logEvent, probs.NotFound("No such challenge"), nil)
 	}
@@ -1145,8 +1151,8 @@ func (wfe *WebFrontEndImpl) getChallenge(
 	request *http.Request,
 	authz core.Authorization,
 	challenge *core.Challenge,
-	logEvent *web.RequestEvent) {
-
+	logEvent *web.RequestEvent,
+) {
 	wfe.prepChallengeForDisplay(request, authz, challenge)
 
 	authzURL := urlForAuthz(authz, request)
@@ -1168,7 +1174,8 @@ func (wfe *WebFrontEndImpl) postChallenge(
 	request *http.Request,
 	authz core.Authorization,
 	challengeIndex int,
-	logEvent *web.RequestEvent) {
+	logEvent *web.RequestEvent,
+) {
 	body, _, currAcct, prob := wfe.validPOSTForAccount(request, ctx, logEvent)
 	addRequesterHeader(response, logEvent.Requester)
 	if prob != nil {
@@ -1260,7 +1267,8 @@ func (wfe *WebFrontEndImpl) Account(
 	ctx context.Context,
 	logEvent *web.RequestEvent,
 	response http.ResponseWriter,
-	request *http.Request) {
+	request *http.Request,
+) {
 	body, _, currAcct, prob := wfe.validPOSTForAccount(request, ctx, logEvent)
 	addRequesterHeader(response, logEvent.Requester)
 	if prob != nil {
@@ -1318,7 +1326,8 @@ func (wfe *WebFrontEndImpl) Account(
 func (wfe *WebFrontEndImpl) updateAccount(
 	ctx context.Context,
 	requestBody []byte,
-	currAcct *core.Registration) (*core.Registration, *probs.ProblemDetails) {
+	currAcct *core.Registration,
+) (*core.Registration, *probs.ProblemDetails) {
 	// Only the Contact and Status fields of an account may be updated this way.
 	// For key updates clients should be using the key change endpoint.
 	var accountUpdateRequest struct {
@@ -1404,7 +1413,8 @@ func (wfe *WebFrontEndImpl) deactivateAuthorization(
 	authzPB *corepb.Authorization,
 	logEvent *web.RequestEvent,
 	response http.ResponseWriter,
-	body []byte) bool {
+	body []byte,
+) bool {
 	var req struct {
 		Status core.AcmeStatus
 	}
@@ -1433,8 +1443,8 @@ func (wfe *WebFrontEndImpl) Authorization(
 	ctx context.Context,
 	logEvent *web.RequestEvent,
 	response http.ResponseWriter,
-	request *http.Request) {
-
+	request *http.Request,
+) {
 	if features.Enabled(features.MandatoryPOSTAsGET) && request.Method != http.MethodPost && !requiredStale(request, logEvent) {
 		wfe.sendError(response, logEvent, probs.MethodNotAllowed(), nil)
 		return
@@ -1779,7 +1789,8 @@ func (wfe *WebFrontEndImpl) KeyRollover(
 	ctx context.Context,
 	logEvent *web.RequestEvent,
 	response http.ResponseWriter,
-	request *http.Request) {
+	request *http.Request,
+) {
 	// Validate the outer JWS on the key rollover in standard fashion using
 	// validPOSTForAccount
 	outerBody, outerJWS, acct, prob := wfe.validPOSTForAccount(request, ctx, logEvent)
@@ -1952,7 +1963,8 @@ func (wfe *WebFrontEndImpl) NewOrder(
 	ctx context.Context,
 	logEvent *web.RequestEvent,
 	response http.ResponseWriter,
-	request *http.Request) {
+	request *http.Request,
+) {
 	body, _, acct, prob := wfe.validPOSTForAccount(request, ctx, logEvent)
 	addRequesterHeader(response, logEvent.Requester)
 	if prob != nil {
@@ -1992,23 +2004,36 @@ func (wfe *WebFrontEndImpl) NewOrder(
 	// short enough to meet the max CN bytes requirement.
 	names := make([]string, len(newOrderRequest.Identifiers))
 	for i, ident := range newOrderRequest.Identifiers {
-		if ident.Type != identifier.DNS {
-			wfe.sendError(response, logEvent,
-				probs.Malformed("NewOrder request included invalid non-DNS type identifier: type %q, value %q",
-					ident.Type, ident.Value),
-				nil)
-			return
-		}
-		if ident.Value == "" {
-			wfe.sendError(response, logEvent, probs.Malformed("NewOrder request included empty domain name"), nil)
-			return
-		}
-		names[i] = ident.Value
-		// The max length of a CommonName is 64 bytes. Check to make sure
-		// at least one DNS name meets this requirement to be promoted to
-		// the CN.
-		if len(names[i]) <= 64 {
+		if ident.Type == identifier.TNAuthList {
+			// TODO: check if additional validation is needed
+			if ident.Value == "" {
+				wfe.sendError(response, logEvent, probs.Malformed("NewOrder request included empty service provider code"), nil)
+				return
+			}
+			names[i] = ident.Value
 			hasValidCNLen = true
+		} else if ident.Type == identifier.DNS {
+
+			if ident.Value == "" {
+				wfe.sendError(response, logEvent, probs.Malformed("NewOrder request included empty domain name"), nil)
+				return
+			}
+			names[i] = ident.Value
+			// The max length of a CommonName is 64 bytes. Check to make sure
+			// at least one DNS name meets this requirement to be promoted to
+			// the CN.
+			if len(names[i]) <= 64 {
+				hasValidCNLen = true
+			} else {
+
+				wfe.sendError(response, logEvent,
+					probs.Malformed("NewOrder request included invalid non-DNS type identifier: type %q, value %q",
+						ident.Type, ident.Value),
+					nil)
+				return
+
+			}
+
 		}
 	}
 	if !hasValidCNLen {

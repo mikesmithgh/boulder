@@ -8,6 +8,7 @@ type IdentifierType string
 const (
 	// DNS is specified in RFC 8555 for DNS type identifiers.
 	DNS = IdentifierType("dns")
+  TNAuthList = IdentifierType("TNAuthList") // TODO: confirm casing
 )
 
 // ACMEIdentifier is a struct encoding an identifier that can be validated. The

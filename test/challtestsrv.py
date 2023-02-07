@@ -1,6 +1,7 @@
 import json
 import requests
 
+
 class ChallTestServer:
     """
     ChallTestServer is a wrapper around pebble-challtestsrv's HTTP management
@@ -12,29 +13,29 @@ class ChallTestServer:
     _baseURL = "http://10.77.77.77:8055"
 
     _paths = {
-            "set-ipv4": "/set-default-ipv4",
-            "set-ipv6": "/set-default-ipv6",
-            "del-history": "/clear-request-history",
-            "get-http-history": "/http-request-history",
-            "get-dns-history": "/dns-request-history",
-            "get-alpn-history": "/tlsalpn01-request-history",
-            "add-a": "/add-a",
-            "del-a": "/clear-a",
-            "add-aaaa": "/add-aaaa",
-            "del-aaaa": "/clear-aaaa",
-            "add-caa": "/add-caa",
-            "del-caa": "/clear-caa",
-            "add-redirect": "/add-redirect",
-            "del-redirect": "/del-redirect",
-            "add-http": "/add-http01",
-            "del-http": "/del-http01",
-            "add-txt": "/set-txt",
-            "del-txt": "/clear-txt",
-            "add-alpn": "/add-tlsalpn01",
-            "del-alpn": "/del-tlsalpn01",
-            "add-servfail": "/set-servfail",
-            "del-servfail": "/clear-servfail",
-            }
+        "set-ipv4": "/set-default-ipv4",
+        "set-ipv6": "/set-default-ipv6",
+        "del-history": "/clear-request-history",
+        "get-http-history": "/http-request-history",
+        "get-dns-history": "/dns-request-history",
+        "get-alpn-history": "/tlsalpn01-request-history",
+        "add-a": "/add-a",
+        "del-a": "/clear-a",
+        "add-aaaa": "/add-aaaa",
+        "del-aaaa": "/clear-aaaa",
+        "add-caa": "/add-caa",
+        "del-caa": "/clear-caa",
+        "add-redirect": "/add-redirect",
+        "del-redirect": "/del-redirect",
+        "add-http": "/add-http01",
+        "del-http": "/del-http01",
+        "add-txt": "/set-txt",
+        "del-txt": "/clear-txt",
+        "add-alpn": "/add-tlsalpn01",
+        "del-alpn": "/del-tlsalpn01",
+        "add-servfail": "/set-servfail",
+        "del-servfail": "/clear-servfail",
+    }
 
     def __init__(self, url=None):
         if url is not None:
@@ -42,8 +43,8 @@ class ChallTestServer:
 
     def _postURL(self, url, body):
         response = requests.post(
-                url,
-                data=json.dumps(body))
+            url,
+            data=json.dumps(body))
         return response.text
 
     def _URL(self, path):
@@ -54,8 +55,8 @@ class ChallTestServer:
 
     def _clear_request_history(self, host, typ):
         return self._postURL(
-                self._URL("del-history"),
-                { "host": host, "type": typ })
+            self._URL("del-history"),
+            {"host": host, "type": typ})
 
     def set_default_ipv4(self, address):
         """
@@ -66,8 +67,8 @@ class ChallTestServer:
         A addresses added.
         """
         return self._postURL(
-                self._URL("set-ipv4"),
-                { "ip": address })
+            self._URL("set-ipv4"),
+            {"ip": address})
 
     def set_default_ipv6(self, address):
         """
@@ -78,8 +79,8 @@ class ChallTestServer:
         have mock AAAA addresses added.
         """
         return self._postURL(
-                self._URL("set-ipv6"),
-                { "ip": address })
+            self._URL("set-ipv6"),
+            {"ip": address})
 
     def add_a_record(self, host, addresses):
         """
@@ -87,8 +88,8 @@ class ChallTestServer:
         interface for the given host and IPv4 addresses.
         """
         return self._postURL(
-                self._URL("add-a"),
-                { "host": host, "addresses": addresses })
+            self._URL("add-a"),
+            {"host": host, "addresses": addresses})
 
     def remove_a_record(self, host):
         """
@@ -96,8 +97,8 @@ class ChallTestServer:
         interface for the given host.
         """
         return self._postURL(
-                self._URL("del-a"),
-                { "host": host })
+            self._URL("del-a"),
+            {"host": host})
 
     def add_aaaa_record(self, host, addresses):
         """
@@ -105,8 +106,8 @@ class ChallTestServer:
         interface for the given host and IPv6 addresses.
         """
         return self._postURL(
-                self._URL("add-aaaa"),
-                { "host": host, "addresses": addresses })
+            self._URL("add-aaaa"),
+            {"host": host, "addresses": addresses})
 
     def remove_aaaa_record(self, host):
         """
@@ -114,8 +115,8 @@ class ChallTestServer:
         interface for the given host.
         """
         return self._postURL(
-                self._URL("del-aaaa"),
-                { "host": host })
+            self._URL("del-aaaa"),
+            {"host": host})
 
     def add_caa_issue(self, host, value):
         """
@@ -124,11 +125,11 @@ class ChallTestServer:
         tag specifying the provided value.
         """
         return self._postURL(
-                self._URL("add-caa"),
-                {
-                    "host": host,
-                    "policies": [{ "tag": "issue", "value": value}],
-                })
+            self._URL("add-caa"),
+            {
+                "host": host,
+                "policies": [{"tag": "issue", "value": value}],
+            })
 
     def remove_caa_issue(self, host):
         """
@@ -136,16 +137,16 @@ class ChallTestServer:
         DNS interface for the given host.
         """
         return self._postURL(
-                self._URL("del-caa"),
-                { "host": host })
+            self._URL("del-caa"),
+            {"host": host})
 
     def http_request_history(self, host):
         """
         http_request_history fetches the challenge server's HTTP request history for the given host.
         """
         return json.loads(self._postURL(
-                self._URL("get-http-history"),
-                { "host": host }))
+            self._URL("get-http-history"),
+            {"host": host}))
 
     def clear_http_request_history(self, host):
         """
@@ -160,8 +161,8 @@ class ChallTestServer:
         the targetURL. Redirects are not served for HTTPS requests.
         """
         return self._postURL(
-                self._URL("add-redirect"),
-                { "path": path, "targetURL": targetURL })
+            self._URL("add-redirect"),
+            {"path": path, "targetURL": targetURL})
 
     def remove_http_redirect(self, path):
         """
@@ -169,8 +170,8 @@ class ChallTestServer:
         interfaces for the given path.
         """
         return self._postURL(
-                self._URL("del-redirect"),
-                { "path": path })
+            self._URL("del-redirect"),
+            {"path": path})
 
     def add_http01_response(self, token, keyauth):
         """
@@ -180,8 +181,8 @@ class ChallTestServer:
         returned as the HTTP response body for requests to the challenge token.
         """
         return self._postURL(
-                self._URL("add-http"),
-                { "token": token, "content": keyauth })
+            self._URL("add-http"),
+            {"token": token, "content": keyauth})
 
     def remove_http01_response(self, token):
         """
@@ -189,8 +190,8 @@ class ChallTestServer:
         the provided token from the challenge test server.
         """
         return self._postURL(
-                self._URL("del-http"),
-                { "token": token })
+            self._URL("del-http"),
+            {"token": token})
 
     def add_servfail_response(self, host):
         """
@@ -199,8 +200,8 @@ class ChallTestServer:
         any other mocks for the host until removed with remove_servfail_response.
         """
         return self._postURL(
-                self._URL("add-servfail"),
-                { "host": host})
+            self._URL("add-servfail"),
+            {"host": host})
 
     def remove_servfail_response(self, host):
         """
@@ -208,8 +209,8 @@ class ChallTestServer:
         removing the SERVFAIL configuration for the given host.
         """
         return self._postURL(
-                self._URL("del-servfail"),
-                { "host": host})
+            self._URL("del-servfail"),
+            {"host": host})
 
     def add_dns01_response(self, host, value):
         """
@@ -221,8 +222,8 @@ class ChallTestServer:
         if host.endswith(".") is False:
             host = host + "."
         return self._postURL(
-                self._URL("add-txt"),
-                { "host": host, "value": value})
+            self._URL("add-txt"),
+            {"host": host, "value": value})
 
     def remove_dns01_response(self, host):
         """
@@ -230,8 +231,8 @@ class ChallTestServer:
         provided host from the challenge test server's DNS interfaces.
         """
         return self._postURL(
-                self._URL("del-txt"),
-                { "host": host })
+            self._URL("del-txt"),
+            {"host": host})
 
     def dns_request_history(self, host):
         """
@@ -239,8 +240,8 @@ class ChallTestServer:
         challenge test server's DNS interfaces for the given host.
         """
         return json.loads(self._postURL(
-                self._URL("get-dns-history"),
-                { "host": host }))
+            self._URL("get-dns-history"),
+            {"host": host}))
 
     def clear_dns_request_history(self, host):
         """
@@ -259,8 +260,8 @@ class ChallTestServer:
         host.
         """
         return self._postURL(
-                self._URL("add-alpn"),
-                { "host": host, "content": value})
+            self._URL("add-alpn"),
+            {"host": host, "content": value})
 
     def remove_tlsalpn01_response(self, host):
         """
@@ -269,8 +270,8 @@ class ChallTestServer:
         the given host.
         """
         return self._postURL(
-                self._URL("del-alpn"),
-                { "host": host })
+            self._URL("del-alpn"),
+            {"host": host})
 
     def tlsalpn01_request_history(self, host):
         """
@@ -279,8 +280,8 @@ class ChallTestServer:
         host.
         """
         return json.loads(self._postURL(
-                self._URL("get-alpn-history"),
-                { "host": host }))
+            self._URL("get-alpn-history"),
+            {"host": host}))
 
     def clear_tlsalpn01_request_history(self, host):
         """

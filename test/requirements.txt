@@ -3,3 +3,7 @@ cryptography>=0.7
 PyOpenSSL
 requests
 codespell
+asn1crypto
+asn1
+pyasn1-modules
+beeprint

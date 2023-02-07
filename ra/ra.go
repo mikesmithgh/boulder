@@ -49,12 +49,6 @@ import (
 	sapb "github.com/letsencrypt/boulder/sa/proto"
 	vapb "github.com/letsencrypt/boulder/va/proto"
 	"github.com/letsencrypt/boulder/web"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/weppos/publicsuffix-go/publicsuffix"
-	"golang.org/x/crypto/ocsp"
-	grpc "google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/emptypb"
-	"gopkg.in/go-jose/go-jose.v2"
 )
 
 var (
@@ -705,7 +699,8 @@ func (ra *RegistrationAuthorityImpl) checkOrderAuthorizations(
 	ctx context.Context,
 	names []string,
 	acctID accountID,
-	orderID orderID) (map[string]*core.Authorization, error) {
+	orderID orderID,
+) (map[string]*core.Authorization, error) {
 	// Get all of the valid authorizations for this account/order
 	req := &sapb.GetValidOrderAuthorizationsRequest{
 		Id:     int64(orderID),
@@ -761,7 +756,8 @@ func (ra *RegistrationAuthorityImpl) checkAuthorizationsCAA(
 	ctx context.Context,
 	names []string,
 	authzs map[string]*core.Authorization,
-	now time.Time) error {
+	now time.Time,
+) error {
 	// badNames contains the names that were unauthorized
 	var badNames []string
 	// recheckAuthzs is a list of authorizations that must have their CAA records rechecked
@@ -891,7 +887,8 @@ func (ra *RegistrationAuthorityImpl) recheckCAA(ctx context.Context, authzs []*c
 			if errors.As(err, &bErr) && bErr.Type == berrors.CAA {
 				subErrors = append(subErrors, berrors.SubBoulderError{
 					Identifier:   recheckResult.authz.Identifier,
-					BoulderError: bErr})
+					BoulderError: bErr,
+				})
 			} else {
 				return err
 			}
@@ -925,8 +922,8 @@ func (ra *RegistrationAuthorityImpl) recheckCAA(ctx context.Context, authzs []*c
 func (ra *RegistrationAuthorityImpl) failOrder(
 	ctx context.Context,
 	order *corepb.Order,
-	prob *probs.ProblemDetails) {
-
+	prob *probs.ProblemDetails,
+) {
 	// Convert the problem to a protobuf problem for the *corepb.Order field
 	pbProb, err := bgrpc.ProblemDetailsToPB(prob)
 	if err != nil {
@@ -948,8 +945,10 @@ func (ra *RegistrationAuthorityImpl) failOrder(
 // To help minimize the chance that an accountID would be used as an order ID
 // (or vice versa) when calling functions that use both we define internal
 // `accountID` and `orderID` types so that callers must explicitly cast.
-type accountID int64
-type orderID int64
+type (
+	accountID int64
+	orderID   int64
+)
 
 // FinalizeOrder accepts a request to finalize an order object and, if possible,
 // issues a certificate to satisfy the order. If an order does not have valid,
@@ -1064,7 +1063,8 @@ func (ra *RegistrationAuthorityImpl) FinalizeOrder(ctx context.Context, req *rap
 func (ra *RegistrationAuthorityImpl) validateFinalizeRequest(
 	ctx context.Context,
 	req *rapb.FinalizeOrderRequest,
-	logEvent *certificateRequestEvent) (*x509.CertificateRequest, error) {
+	logEvent *certificateRequestEvent,
+) (*x509.CertificateRequest, error) {
 	if req.Order.Id <= 0 {
 		return nil, berrors.MalformedError("invalid order ID: %d", req.Order.Id)
 	}
@@ -1181,7 +1181,8 @@ func (ra *RegistrationAuthorityImpl) issueCertificateInner(
 	ctx context.Context,
 	csr *x509.CertificateRequest,
 	acctID accountID,
-	oID orderID) (*x509.Certificate, error) {
+	oID orderID,
+) (*x509.Certificate, error) {
 	// wrapError adds a prefix to an error. If the error is a boulder error then
 	// the problem detail is updated with the prefix. Otherwise a new error is
 	// returned with the message prefixed using `fmt.Errorf`
@@ -1613,8 +1614,8 @@ func (ra *RegistrationAuthorityImpl) recordValidation(ctx context.Context, authI
 // updated based on the results.
 func (ra *RegistrationAuthorityImpl) PerformValidation(
 	ctx context.Context,
-	req *rapb.PerformValidationRequest) (*corepb.Authorization, error) {
-
+	req *rapb.PerformValidationRequest,
+) (*corepb.Authorization, error) {
 	// Clock for start of PerformValidation.
 	vStart := ra.clk.Now()
 
